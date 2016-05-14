@@ -14,10 +14,12 @@ FIND_PACKAGE(MATLAB REQUIRED)
     link_directories(${Matlab_LIB_DIR})
 
 # define submodules directory and adding into include path
-    if(NOT DEFINED SUBMODULES_DIR)
-        set(SUBMODULES_DIR 
-            ${CMAKE_CURRENT_SOURCE_DIR})
+    if(NOT DEFINED ENV{SUBMODULES_DIR} AND NOT DEFINED SUBMODULES_DIR)
+        set(SUBMODULES_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+    elseif(NOT DEFINED SUBMODULES_DIR)
+        set(SUBMODULES_DIR $ENV{SUBMODULES_DIR})
     endif()
+    message(STATUS "SUBMODULES_DIR = ${SUBMODULES_DIR}")
     include_directories(BEFORE ${SUBMODULES_DIR})
 
 # include the relevant source and header files
@@ -60,3 +62,6 @@ FIND_PACKAGE(MATLAB REQUIRED)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DIS_DEBUG=false ${LTO_COMPILE_SWITCH}")
     set_target_properties(TrialCLionProj PROPERTIES LINK_FLAGS_RELEASE ${LTO_LINK_SWITCH})
 
+# unset some cached variables so that they are restord to their
+# default values the next time cmake is run
+    unset(SUBMODULES_DIR CACHE)
