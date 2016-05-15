@@ -31,6 +31,15 @@ FIND_PACKAGE(MATLAB REQUIRED)
             ${MEXMEM_HEADER_FILE_PATHS}
        )
 
+    # source group information to generate filters for VS
+    source_group(
+        "Header Files\\MexMemoryInterfacing" 
+        FILES ${MEXMEM_HEADER_FILE_PATHS})
+    source_group(
+        "Header Files\\GridTwoD" 
+        FILES ${HEADER_FILE_PATHS})
+    
+
 # include executable
     add_executable(TrialCLionProj ${SOURCE_FILES})
     target_link_libraries(TrialCLionProj libmex libmx libut)
