@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
+include(CppGlob.cmake)
 project(TrialCLionProj)
 
 FIND_PACKAGE(Matlab REQUIRED)
@@ -35,8 +36,8 @@ message(STATUS "C++ Compiler = ${CMAKE_CXX_COMPILER}")
     include_directories(BEFORE ${SUBMODULES_DIR})
 
 # include the relevant source and header files
-    file(GLOB_RECURSE HEADER_FILE_PATHS Headers/*.cpp Headers/*.hpp Headers/*.inl)
-    file(GLOB MEXMEM_HEADER_FILE_PATHS ${SUBMODULES_DIR}/MexMemoryInterfacing/Headers/*)
+    get_cxx_files(HEADER_FILE_PATHS Headers)
+    get_cxx_files(MEXMEM_HEADER_FILE_PATHS ${SUBMODULES_DIR}/MexMemoryInterfacing/Headers)
     
     set(SOURCE_FILES Tests/main.cpp
             ${HEADER_FILE_PATHS}
@@ -48,9 +49,8 @@ message(STATUS "C++ Compiler = ${CMAKE_CXX_COMPILER}")
         "Header Files\\MexMemoryInterfacing" 
         FILES ${MEXMEM_HEADER_FILE_PATHS})
     source_group(
-        "Header Files\\GridTwoD" 
+        "Header Files\\Grid2D" 
         FILES ${HEADER_FILE_PATHS})
-    
 
 # include executable
     add_executable(TrialCLionProj ${SOURCE_FILES})
