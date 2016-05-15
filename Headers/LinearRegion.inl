@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include <MexMemoryInterfacing/Headers/MexMem.hpp>
 #include "RegionExc.hpp"
-#include "LinearRegion.hpp"
 
 // ##################################################################
 // CONSTRUCTORS
