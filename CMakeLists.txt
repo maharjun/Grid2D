@@ -91,6 +91,12 @@ message(STATUS "C++ Compiler = ${CMAKE_CXX_COMPILER}")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DIS_DEBUG=false ${LTO_COMPILE_SWITCH}")
     set_target_properties(Grid2DTest PROPERTIES LINK_FLAGS_RELEASE ${LTO_LINK_SWITCH})
 
+# Definition of install directory
+set_target_properties(Grid2DTest PROPERTIES INSTALL_RPATH ${Matlab_LIB_DIR})
+if (NOT CMAKE_CONFIGURATION_TYPES)
+    install(TARGETS Grid2DTest RUNTIME DESTINATION ${CMAKE_BINARY_DIR}/Release CONFIGURATIONS "Release")
+endif()
+
 # unset some cached variables so that they are restord to their
 # default values the next time cmake is run
     unset(SUBMODULES_DIR CACHE)
