@@ -77,11 +77,11 @@ message(STATUS "C++ Compiler = ${CMAKE_CXX_COMPILER}")
     endif()
 
 # assign default build type in case of single config generator 
-if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
-    message(STATUS "CMAKE_BUILD_TYPE not defined")
-    set(CMAKE_BUILD_TYPE "Release")
-endif()
-message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
+    if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+        message(STATUS "CMAKE_BUILD_TYPE not defined")
+        set(CMAKE_BUILD_TYPE "Release")
+    endif()
+    message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 
 # definition of build type specific parameters
 # for DEBUG CONFIG
