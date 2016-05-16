@@ -19,5 +19,5 @@ function(GET_CXX_FILES VARIABLE DIRECTORY)
 
     GET_EXT_FILES(CPP_FILES ${DIRECTORY} ${CXX_EXTENSIONS})
     set(${VARIABLE} ${CPP_FILES} PARENT_SCOPE)
-    message(STATUS "Files Found = ${EXT_FILES}")
+    message(STATUS "Files Found = ${CPP_FILES}")
 endfunction()
