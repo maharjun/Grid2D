@@ -54,8 +54,8 @@ message(STATUS "C++ Compiler = ${CMAKE_CXX_COMPILER}")
         FILES ${HEADER_FILE_PATHS})
 
 # include executable
-    add_executable(TrialCLionProj ${SOURCE_FILES})
-    target_link_libraries(TrialCLionProj ${Matlab_LINK_LIBS})
+    add_executable(Grid2DTest ${SOURCE_FILES})
+    target_link_libraries(Grid2DTest ${Matlab_LINK_LIBS})
 
 # definition of MEX_TYPE
     add_definitions(-DMEX_EXE)
@@ -89,7 +89,7 @@ message(STATUS "C++ Compiler = ${CMAKE_CXX_COMPILER}")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DIS_DEBUG=true")
 # for RELEASE CONFIG
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DIS_DEBUG=false ${LTO_COMPILE_SWITCH}")
-    set_target_properties(TrialCLionProj PROPERTIES LINK_FLAGS_RELEASE ${LTO_LINK_SWITCH})
+    set_target_properties(Grid2DTest PROPERTIES LINK_FLAGS_RELEASE ${LTO_LINK_SWITCH})
 
 # unset some cached variables so that they are restord to their
 # default values the next time cmake is run
