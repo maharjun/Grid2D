@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.5)
 project(TrialCLionProj)
 
-FIND_PACKAGE(MATLAB REQUIRED)
+FIND_PACKAGE(Matlab REQUIRED)
+
+message(STATUS "C Compiler   = ${CMAKE_C_COMPILER}")
+message(STATUS "C++ Compiler = ${CMAKE_CXX_COMPILER}")
 
 # Initializing MATLAB include and link directories
     message(STATUS "Matlab_INCLUDE_DIRS = ${Matlab_INCLUDE_DIRS}")
@@ -12,6 +15,15 @@ FIND_PACKAGE(MATLAB REQUIRED)
     
     message(STATUS "Matlab_LIB_DIR = ${Matlab_LIB_DIR}")
     link_directories(${Matlab_LIB_DIR})
+
+    message(STATUS "Initializing relevant matlab libraries")
+    set(Matlab_LINK_LIBS mex mx ut)
+    if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        foreach(Matlab_lib in ${Matlab_LINK_LIBS})
+            list(APPEND Temp_Matlab_LINK_LIBS lib${Matlab_lib})
+        endforeach()
+        set(Matlab_LINK_LIBS ${Temp_Matlab_LINK_LIBS})
+    endif()
 
 # define submodules directory and adding into include path
     if(NOT DEFINED ENV{SUBMODULES_DIR} AND NOT DEFINED SUBMODULES_DIR)
@@ -42,7 +54,7 @@ FIND_PACKAGE(MATLAB REQUIRED)
 
 # include executable
     add_executable(TrialCLionProj ${SOURCE_FILES})
-    target_link_libraries(TrialCLionProj libmex libmx libut)
+    target_link_libraries(TrialCLionProj ${Matlab_LINK_LIBS})
 
 # definition of MEX_TYPE
     add_definitions(-DMEX_EXE)
@@ -63,6 +75,13 @@ FIND_PACKAGE(MATLAB REQUIRED)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -march=native")
     endif()
+
+# assign default build type in case of single config generator 
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+    message(STATUS "CMAKE_BUILD_TYPE not defined")
+    set(CMAKE_BUILD_TYPE "Release")
+endif()
+message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 
 # definition of build type specific parameters
 # for DEBUG CONFIG
