@@ -124,9 +124,23 @@ int main() {
 		}
 	}
 
-	// Consolidate, insert (1,1) and consolidate again.
+	// Consolidate, insert (1,1)
 	ARegion.consolidate();
 	ARegion.insert(Point(1, 1));
+
+	// Test for containership of points
+	assert(ARegion.contains(Point(1,1)));
+	cout << "(1,1) (Non-consolidated Point) successfully detected in ARegion" << endl;
+	assert(ARegion.contains(Point(1,2)));
+	cout << "(1,2) (Consolidated Point) successfully detected in ARegion" << endl;
+	assert(ARegion.contains(Point(2,2)));
+	cout << "(2,2) (Consolidated Edge Point) successfully detected in ARegion" << endl;
+	assert(!ARegion.contains(Point(3,3)));
+	cout << "(3,3) (External Point) successfully NOT detected in ARegion" << endl;
+	assert(!ARegion.contains(Point(2,3)));
+	cout << "(2,3) (External Point) successfully NOT detected in ARegion" << endl;
+
+	// Consolidate the insertion of (1,1)
 	ARegion.consolidate();
 
 	// Insert SecondSquare

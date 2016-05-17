@@ -65,7 +65,11 @@ public:
 	inline bool contains(const Point& point2Search) const {
 		bool isContained = nonAddedPoints.count(point2Search);
 		if (!isContained) {
-			isContained = gridColumns[point2Search.x].find(point2Search);
+			auto contIntervalIndex = gridColumns[point2Search.x].find(point2Search);
+			if(contIntervalIndex < gridColumns[point2Search.x].getRegionIntervals().size()){
+				auto &containingInterval = gridColumns[point2Search.x].getRegionIntervals()[contIntervalIndex];
+				isContained = containingInterval.contains(point2Search.y);
+			}
 		}
 		return isContained;
 	}

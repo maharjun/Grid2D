@@ -27,7 +27,7 @@ public:
 	{
 		return columnCoord;
 	}
-	inline bool find(const Point& P) const {
+	inline uint32_t find(const Point& P) const {
 		ValidatePoint(P);
 		return LinearRegion::find(P.y);
 	}
@@ -57,7 +57,7 @@ public:
 	{
 		return rowCoord;
 	}
-	inline bool find(const Point &P) const {
+	inline uint32_t find(const Point &P) const {
 		ValidatePoint(P);
 		return LinearRegion::find(P.x);
 	}
