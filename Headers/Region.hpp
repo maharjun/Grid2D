@@ -4,6 +4,8 @@
 #include <stdint.h>
 
 #include <MexMemoryInterfacing/Headers/MexMem.hpp>
+#include <MexMemoryInterfacing/Headers/GenericMexIO.hpp>
+#include "RegionExc.hpp"
 #include "Point.hpp"
 #include "RowColumnRegion.hpp"
 
@@ -52,9 +54,95 @@ public:
 		this->initGridRowColumns();
 	}
 
-	inline const PointSet & getInnerBoundary() const {
-		consolidate();
-		return this->innerBoundary;
+	Region(PointMexVect &Boundary, uint32_t gridXLim_, uint32_t gridYLim_) : Region(gridXLim_, gridYLim_) {
+		/*
+		 * This function is used to initialize a Region through a Midway Boundary.
+		 *
+		 * First, We bucket the points according to their X coordinates. Then we sort
+		 * the buckets. These buckets become the gridColumns
+		 *
+		 * Next, We bucket the points according to their Y coordinates. Then we sort
+		 * the buckets. These buckets become the gridRows.
+		 *
+		 */
+
+		// CAllocator is used here due to matlabs horrible inefficiency in cleaning up
+		// memory.
+		MexVector<MexVector<uint32_t, CAllocator>> gridColumnBuckets(gridXLim_);
+		MexVector<MexVector<uint32_t, CAllocator>> gridRowBuckets(gridYLim_);
+
+		// Validating Boundary
+		// 1.  Every point must be adjacent to the next
+		// 2.  All points should be <= gridlims
+		bool isBoundaryValid = true;
+		for(int i=0; i<Boundary.size(); ++i) {
+			auto CurrentPoint = Boundary[i];
+			auto NextPoint = (i+1<Boundary.size())?Boundary[i+1]:Boundary[0];
+
+			if (CurrentPoint.x == NextPoint.x &&
+				(CurrentPoint.y + 1 == NextPoint.y || CurrentPoint.y == NextPoint.y + 1)) {}
+			else if(CurrentPoint.y == NextPoint.y &&
+				(CurrentPoint.x + 1 == NextPoint.x || CurrentPoint.x == NextPoint.x + 1)) {}
+			else {
+				isBoundaryValid = false;
+				break;
+			}
+			if (Boundary[i].x > gridXLim_ || Boundary[i].y > gridYLim_) {
+				isBoundaryValid = false;
+				break;
+			}
+		}
+		if(isBoundaryValid) {
+			isBoundaryValid = (
+				(Boundary.last().x == Boundary[0].x || Boundary.last().y == Boundary[0].y) &&
+				Boundary.last().x <= gridXLim_ && Boundary.last().y <= gridYLim_
+			);
+		}
+
+		if(isBoundaryValid) {
+			// Bucketing points
+			for(int i=0; i<Boundary.size(); ++i) {
+
+				auto CurrentPoint = Boundary[i];
+				auto NextPoint = (i+1<Boundary.size())?Boundary[i+1]:Boundary[0];
+
+				if(NextPoint.x == CurrentPoint.x && NextPoint.y == CurrentPoint.y+1) {
+					// Upward edge => left edge => insert point into row
+					gridRowBuckets[CurrentPoint.y].push_back(CurrentPoint.x);
+				}
+				else if(NextPoint.x == CurrentPoint.x && NextPoint.y+1 == CurrentPoint.y) {
+					// Downward edge => right edge => insert point into row.
+					gridRowBuckets[CurrentPoint.y-1].push_back(CurrentPoint.x);
+				}
+				else if(NextPoint.x == CurrentPoint.x+1 && NextPoint.y == CurrentPoint.y) {
+					// Rightward edge => Top edge => insert point into column.
+					gridColumnBuckets[CurrentPoint.x].push_back(CurrentPoint.y);
+				}
+				else if(NextPoint.x+1 == CurrentPoint.x && NextPoint.y == CurrentPoint.y) {
+					// Leftward edge => Bottom edge => insert point into column.
+					gridColumnBuckets[CurrentPoint.x-1].push_back(CurrentPoint.y);
+				}
+			}
+
+			// Sorting
+			for(auto &column : gridColumnBuckets) {
+				std::sort(column.begin(), column.end());
+			}
+			for(auto &row : gridRowBuckets) {
+				std::sort(row.begin(), row.end());
+			}
+
+			// Assigning
+			for(int i=0; i<gridXLim_; ++i) {
+				gridColumns[i].assignVect(gridColumnBuckets[i]);
+			}
+			for(int i=0; i<gridYLim_; ++i) {
+				gridRows[i].assignVect(gridRowBuckets[i]);
+			}
+		}
+		else {
+			WriteException(RegionException::INVALID_BOUNDARY, "The Boundary specified is invalid\n");
+		}
 	}
 	void consolidate() const;
 	inline void insert(const Point& point2Insert) {
@@ -72,6 +160,10 @@ public:
 			}
 		}
 		return isContained;
+	}
+	inline const PointSet & getInnerBoundary() const {
+		consolidate();
+		return this->innerBoundary;
 	}
 	PointSet getOuterBoundary() const;
 	PointMexVect getMidwayBoundary() const;

@@ -46,9 +46,13 @@ private:
 public:
 	LinearRegion();
 	explicit LinearRegion(uint32_t regionLenLim_);
+	template<class Al>
+	LinearRegion(uint32_t regionLenLim_, const MexVector<uint32_t, Al> &intervalBoundaryVect);
 	
 	inline uint32_t find(uint32_t val) const;
 	inline void insert(uint32_t val);
+	template<class Al>
+	inline void assignVect(const MexVector<uint32_t, Al> &intervalBoundaryVect);
 	inline void resize(uint32_t NewLenLim);
 	inline const MexVector<DiscreteInterval> &getRegionIntervals() const;
 	inline LinearRegion getDiff(const LinearRegion &otherLinRegion) const;

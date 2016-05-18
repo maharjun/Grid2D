@@ -4,6 +4,7 @@
 #include <limits.h>
 #include <stdint.h>
 #include <MexMemoryInterfacing/Headers/MexMem.hpp>
+#include <MexMemoryInterfacing/Headers/GenericMexIO.hpp>
 #include "RegionExc.hpp"
 
 // ##################################################################
@@ -13,6 +14,11 @@
 inline LinearRegion::LinearRegion() : regionLenLim(UINT32_MAX), regionIntervals() {}
 
 inline LinearRegion::LinearRegion(uint32_t regionLenLim_) : regionLenLim(regionLenLim_), regionIntervals() {}
+
+template <class Al>
+inline LinearRegion::LinearRegion(uint32_t regionLenLim_, const MexVector<uint32_t, Al> &intervalBoundaryVect) : LinearRegion(regionLenLim_) {
+	this->assignVect(intervalBoundaryVect);
+}
 
 // ##################################################################
 // MEMBER FUNCTIONS
@@ -256,5 +262,38 @@ inline bool LinearRegion::contains(uint32_t val) const {
 	auto IntervalIndex = this->find(val);
 	return (regionIntervals[IntervalIndex].contains(val));
 }
+
+template <class Al>
+void LinearRegion::assignVect(const MexVector<uint32_t, Al> &intervalBoundaryVect) {
+	// Validate intervalBoundaryVect and assign.
+
+	// Check if intervalBoundaryVect is of even length
+	bool isVectValid = !(intervalBoundaryVect.size()%2);;
+	if (isVectValid) {
+		// Check if intervalBoundaryVect is sorted in strictly ascending order.
+		// and if all elements except the last are within range
+		for(size_t i = 0; i+1 < intervalBoundaryVect.size(); ++i) {
+			if (intervalBoundaryVect[i] >= intervalBoundaryVect[i+1] || intervalBoundaryVect[i] >= regionLenLim) {
+				isVectValid = false;
+				break;
+			}
+		}
+	}
+	if (isVectValid && !intervalBoundaryVect.isempty()) {
+		// Check if last element is within range or == length
+		isVectValid = (intervalBoundaryVect.last() <= regionLenLim);
+	}
+
+	if (isVectValid) {
+		regionIntervals.resize(intervalBoundaryVect.size()/2);
+		for(int i=0; i<intervalBoundaryVect.size(); i+=2) {
+			regionIntervals.push_back(DiscreteInterval(intervalBoundaryVect[i], intervalBoundaryVect[i+1]));
+		}
+	}
+	else {
+		WriteException(RegionException::INVALID_LINEAR_REGION, "The Given Linear Region Is Invalid\n");
+	}
+}
+
 
 #endif

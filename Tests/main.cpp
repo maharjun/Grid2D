@@ -8,8 +8,6 @@ using namespace std;
 
 int main() {
 
-	Region ARegion(7, 7);
-
 	/*
 	 * This code inserts the following region
 	 *
@@ -72,6 +70,8 @@ int main() {
 	 *     ■ □ □ ■ □ □ □
 	 *     ■ ■ ■ ■ □ □ □
 	 */
+
+	Region ARegion(7, 7);
 
 	PointMexVect FirstSquare = {
 		Point(0,0), Point(1,0), Point(2,0),

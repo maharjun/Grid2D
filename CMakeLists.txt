@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/")
 include(CppGlob)
+include(CustomAddExe)
 project(Grid2DTest)
 
 FIND_PACKAGE(Matlab REQUIRED)
@@ -38,12 +39,18 @@ message(STATUS "C++ Compiler = ${CMAKE_CXX_COMPILER}")
 
 # include the relevant source and header files
     get_cxx_files(HEADER_FILE_PATHS Headers)
+    get_cxx_files(MEX_HEADER_FILE_PATHS MexHeaders)
     get_cxx_files(MEXMEM_HEADER_FILE_PATHS ${SUBMODULES_DIR}/MexMemoryInterfacing/Headers)
-    
-    set(SOURCE_FILES Tests/main.cpp
+
+    set(COMMON_SOURCE_FILES
             ${HEADER_FILE_PATHS}
-            ${MEXMEM_HEADER_FILE_PATHS}
-       )
+            ${MEX_HEADER_FILE_PATHS}
+            ${MEXMEM_HEADER_FILE_PATHS})
+    set(SOURCE_FILES_1 Tests/main.cpp
+            ${COMMON_SOURCE_FILES})
+    set(SOURCE_FILES_2 Tests/mexmain.cpp
+            ${COMMON_SOURCE_FILES})
+    set(SOURCE_FILES ${SOURCE_FILES_1} ${SOURCE_FILES_2})
 
     # source group information to generate filters for VS
     source_group(
@@ -52,10 +59,13 @@ message(STATUS "C++ Compiler = ${CMAKE_CXX_COMPILER}")
     source_group(
         "Header Files\\Grid2D" 
         FILES ${HEADER_FILE_PATHS})
+    source_group(
+        "Header Files\\Grid2D\\MexHeaders"
+        FILES ${MEX_HEADER_FILE_PATHS})
 
 # include executable
-    add_executable(Grid2DTest ${SOURCE_FILES})
-    target_link_libraries(Grid2DTest ${Matlab_LINK_LIBS})
+    custom_add_executable(Grid2DTest ${SOURCE_FILES_1})
+    custom_add_executable(Grid2DMexIOTest ${SOURCE_FILES_2})
 
 # definition of MEX_TYPE
     add_definitions(-DMEX_EXE)
@@ -75,6 +85,7 @@ message(STATUS "C++ Compiler = ${CMAKE_CXX_COMPILER}")
 # assigning platform specific compiler flags
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -march=native")
+        set(RELEASE_OPTIM_OPTION "-O3")
     endif()
 
 # assign default build type in case of single config generator 
@@ -88,14 +99,12 @@ message(STATUS "C++ Compiler = ${CMAKE_CXX_COMPILER}")
 # for DEBUG CONFIG
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DIS_DEBUG=true")
 # for RELEASE CONFIG
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DIS_DEBUG=false ${LTO_COMPILE_SWITCH}")
-    set_target_properties(Grid2DTest PROPERTIES LINK_FLAGS_RELEASE ${LTO_LINK_SWITCH})
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DIS_DEBUG=false ${RELEASE_OPTIM_OPTION} ${LTO_COMPILE_SWITCH}")
 
 # Definition of install directory
-set_target_properties(Grid2DTest PROPERTIES INSTALL_RPATH ${Matlab_LIB_DIR})
-if (NOT CMAKE_CONFIGURATION_TYPES)
-    install(TARGETS Grid2DTest RUNTIME DESTINATION ${CMAKE_BINARY_DIR}/Release CONFIGURATIONS "Release")
-endif()
+    if (NOT CMAKE_CONFIGURATION_TYPES)
+        install(TARGETS Grid2DTest Grid2DMexIOTest RUNTIME DESTINATION ${CMAKE_BINARY_DIR}/Release CONFIGURATIONS "Release")
+    endif()
 
 # unset some cached variables so that they are restord to their
 # default values the next time cmake is run
