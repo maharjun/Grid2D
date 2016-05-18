@@ -15,11 +15,11 @@ struct GridTransform {
     T scaleX, scaleY;
     T shiftX, shiftY;
 
-	inline DoublePoint toDynSysPoint(const DoublePoint &gridPoint) const {
-		return DoublePoint((gridPoint.x - shiftX)/scaleX, (gridPoint.y - shiftY)/scaleY);
+	inline DoublePoint toActualPoint(const DoublePoint &gridPoint) const {
+		return Point<T>(scaleX*gridPoint.x + shiftX, scaleY*gridPoint.y + shiftY);
 	}
-	inline Point<T> toGridPoint(const Point<T> &dynSysPoint) const {
-		return Point<T>(scaleX*dynSysPoint.x + shiftX, scaleY*dynSysPoint.y + shiftY);
+	inline Point<T> toGridPoint(const Point<T> &actualPoint) const {
+		return DoublePoint((actualPoint.x - shiftX)/scaleX, (actualPoint.y - shiftY)/scaleY);
 	}
 	inline bool test() const {
 		std::vector<DoublePoint> TestGridPointVect = {
@@ -32,7 +32,7 @@ struct GridTransform {
 		bool isSuccessful = true;
 		double eps = 1e-10;
 		for(auto &TestGridPoint : TestGridPointVect) {
-			auto ReturnPoint = toGridPoint(toDynSysPoint(TestGridPoint));
+			auto ReturnPoint = toGridPoint(toActualPoint(TestGridPoint));
 			if (
 				std::abs(ReturnPoint.x - TestGridPoint.x) >= eps ||
 				std::abs(ReturnPoint.y - TestGridPoint.y) >= eps) {
