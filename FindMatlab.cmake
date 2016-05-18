@@ -1080,22 +1080,28 @@ function(_Matlab_get_version_from_root matlab_root matlab_known_version matlab_f
   # update the location of the program
   set(Matlab_PROG_VERSION_STRING_AUTO_DETECT ${_matlab_main_real_path_tmp} CACHE INTERNAL "internal matlab location for the discovered version" FORCE)
 
-  set(matlab_list_of_all_versions)
-  matlab_get_version_from_matlab_run("${Matlab_PROG_VERSION_STRING_AUTO_DETECT}" matlab_list_of_all_versions)
-
-  if(matlab_list_of_all_versions)
-    list(GET matlab_list_of_all_versions 0 _matlab_version_tmp)
-  else()
-    # In this case, we couldnt get matlab running so get
-    # the version from the release name
-    get_filename_component(_matlab_root_from_real_path_tmp "${_matlab_main_real_path_tmp}" DIRECTORY)
-    get_filename_component(_matlab_root_from_real_path_tmp "${_matlab_root_from_real_path_tmp}" DIRECTORY)
-    get_filename_component(_matlab_release_name_tmp "${_matlab_root_from_real_path_tmp}" NAME)
-    if(MATLAB_FIND_DEBUG)
-      message(STATUS "[MATLAB] Matlab Release Name ${_matlab_release_name_tmp}  ")
-    endif()
-    matlab_get_version_from_release_name(${_matlab_release_name_tmp} _matlab_version_tmp)
+  # We try to get the version from the release name
+  get_filename_component(_matlab_root_from_real_path_tmp "${_matlab_main_real_path_tmp}" DIRECTORY)
+  get_filename_component(_matlab_root_from_real_path_tmp "${_matlab_root_from_real_path_tmp}" DIRECTORY)
+  get_filename_component(_matlab_release_name_tmp "${_matlab_root_from_real_path_tmp}" NAME)
+  if(MATLAB_FIND_DEBUG)
+    message(STATUS "[MATLAB] Matlab Release Name ${_matlab_release_name_tmp}  ")
   endif()
+  matlab_get_version_from_release_name(${_matlab_release_name_tmp} _matlab_version_tmp)
+
+  if (NOT _matlab_version_tmp)
+    // As a final effort we try to get the version from a run of the MATLAB
+    // executable.
+    set(matlab_list_of_all_versions)
+    matlab_get_version_from_matlab_run("${Matlab_PROG_VERSION_STRING_AUTO_DETECT}" matlab_list_of_all_versions)
+
+    if(matlab_list_of_all_versions)
+      list(GET matlab_list_of_all_versions 0 _matlab_version_tmp)
+    else()
+      set(_matlab_version_tmp "NOTFOUND")
+    endif()
+  endif()
+  
   # set the version into the cache
   set(Matlab_VERSION_STRING_INTERNAL ${_matlab_version_tmp} CACHE INTERNAL "Matlab version (automatically determined)" FORCE)
 
