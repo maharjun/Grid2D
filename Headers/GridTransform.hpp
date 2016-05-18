@@ -1,7 +1,7 @@
 #ifndef TRANSFORM_HPP
 #define TRANSFORM_HPP
 
-#include "Grid2D/Point.hpp"
+#include "Grid2D/Headers/Point.hpp"
 #include <cmath>
 #include <type_traits>
 
@@ -11,37 +11,17 @@ template<typename T,
              std::is_same<T,float>::value>
              ::type>
 struct GridTransform {
-	/* This class contains the static methods that are responsible for trans-
-	 * formations between the grid  coordinate system and the coordinate sys-
-	 * tem of the state space of the relevant dynamical system.
-	 *
-	 * Functions contained:
-	 *
-	 *   1. toDynSysPoint(const DoublePoint &gridPoint)
-	 *   2. toGridPoint(const DoublePoint &dynSysPoint)
-	 *   3. test()
-	 *
-	 * It is the responsibility  of the creater of this  class to ensure that
-	 * these two functions are actually the inverse of each other.
-	 *
-	 * The test()  function is a  function that returns a  boolean value that
-	 * represents whether the given CoordTransform is valid or not. It basic-
-	 * aly applies the composition  of the above two  functions and checks if
-	 * the resultant is identity or not. It is executed on the vector of test
-	 * points specified inside the function itself
-	 *
-	 */
 
     T scaleX, scaleY;
     T shiftX, shiftY;
 
-	static inline DoublePoint toDynSysPoint(const DoublePoint &gridPoint) {
+	inline DoublePoint toDynSysPoint(const DoublePoint &gridPoint) const {
 		return DoublePoint((gridPoint.x - shiftX)/scaleX, (gridPoint.y - shiftY)/scaleY);
 	}
-	static inline Point<T> toGridPoint(const Point<T> &dynSysPoint) {
+	inline Point<T> toGridPoint(const Point<T> &dynSysPoint) const {
 		return Point<T>(scaleX*dynSysPoint.x + shiftX, scaleY*dynSysPoint.y + shiftY);
 	}
-	static inline bool test() {
+	inline bool test() const {
 		std::vector<DoublePoint> TestGridPointVect = {
 			DoublePoint(0,0),
 			DoublePoint(1,0),
