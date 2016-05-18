@@ -6,6 +6,7 @@
 #include <MexMemoryInterfacing/Headers/MexMem.hpp>
 #include <MexMemoryInterfacing/Headers/GenericMexIO.hpp>
 #include "RegionExc.hpp"
+#include "LinearRegion.hpp"
 
 // ##################################################################
 // CONSTRUCTORS
@@ -110,7 +111,7 @@ void LinearRegion::insert(uint32_t val) {
 		}
 		else{
 			// In this case we need to add a new region.
-			regionIntervals.insert(IntervalIndex, DiscreteInterval(val, val + 1));
+			regionIntervals.insert(IntervalIndex, DiscreteRange(val, val + 1));
 		}
 	}
 }
@@ -143,7 +144,7 @@ void LinearRegion::resize(uint32_t NewLenLim)
 	this->regionLenLim = NewLenLim;
 }
 
-inline const MexVector<DiscreteInterval> & LinearRegion::getRegionIntervals() const
+inline const MexVector<DiscreteRange> & LinearRegion::getRegionIntervals() const
 {
 	return regionIntervals;
 }
@@ -222,11 +223,11 @@ inline LinearRegion LinearRegion::getDiff(const LinearRegion & otherLinRegion) c
 		// else if BInterval > ACursor
 		else {
 			if(AInterval.intersects(BInterval)) {
-				DiffRegion.regionIntervals.push_back(DiscreteInterval(ACursor, BInterval.beginPoint));
+				DiffRegion.regionIntervals.push_back(DiscreteRange(ACursor, BInterval.beginPoint));
 				ACursor = BInterval.beginPoint;
 			}
 			else {
-				DiffRegion.regionIntervals.push_back(DiscreteInterval(ACursor, AInterval.endPoint));
+				DiffRegion.regionIntervals.push_back(DiscreteRange(ACursor, AInterval.endPoint));
 				AIntervalIndex++;
 				ACursor = (AIntervalIndex < ASegBounds.size()) ? ASegBounds[AIntervalIndex].beginPoint : 0;
 			}
@@ -234,7 +235,7 @@ inline LinearRegion LinearRegion::getDiff(const LinearRegion & otherLinRegion) c
 	}
 
 	if (AIntervalIndex < ASegBounds.size()) {
-		DiffRegion.regionIntervals.push_back(DiscreteInterval(ACursor, ASegBounds[AIntervalIndex].endPoint));
+		DiffRegion.regionIntervals.push_back(DiscreteRange(ACursor, ASegBounds[AIntervalIndex].endPoint));
 		AIntervalIndex++;
 		for (; AIntervalIndex < ASegBounds.size(); ++AIntervalIndex) {
 			DiffRegion.regionIntervals.push_back(ASegBounds[AIntervalIndex]);
@@ -287,7 +288,7 @@ void LinearRegion::assignVect(const MexVector<uint32_t, Al> &intervalBoundaryVec
 	if (isVectValid) {
 		regionIntervals.resize(intervalBoundaryVect.size()/2);
 		for(int i=0; i<intervalBoundaryVect.size(); i+=2) {
-			regionIntervals.push_back(DiscreteInterval(intervalBoundaryVect[i], intervalBoundaryVect[i+1]));
+			regionIntervals.push_back(DiscreteRange(intervalBoundaryVect[i], intervalBoundaryVect[i+1]));
 		}
 	}
 	else {
