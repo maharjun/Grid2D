@@ -2,6 +2,8 @@
 #define REGION_HPP
 
 #include <stdint.h>
+#include <type_traits>
+#include <algorithm>
 
 #include <MexMemoryInterfacing/Headers/MexMem.hpp>
 #include <MexMemoryInterfacing/Headers/GenericMexIO.hpp>
@@ -160,6 +162,12 @@ public:
 			}
 		}
 		return isContained;
+	}
+	template <typename T, typename B=typename std::enable_if<std::is_floating_point<T>::value>::type>
+	inline bool contains(const GenericPoint<T>& contPoint2Search) const {
+		Point closestPoint  = Point(contPoint2Search.x+0.5, contPoint2Search.y+0.5);
+
+		return contains(closestPoint);
 	}
 	inline const PointSet & getInnerBoundary() const {
 		consolidate();
