@@ -1,3 +1,6 @@
 [submodule "MexMemoryInterfacing"]
 	path = MexMemoryInterfacing
 	url = https://www.github.com/maharjun/MexMemoryInterfacing
+[submodule "CMakeModules"]
+	path = CMakeModules
+	url = https://www.github.com/maharjun/CMakeModules

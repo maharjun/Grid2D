@@ -1,32 +1,13 @@
 cmake_minimum_required(VERSION 3.5)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMakeModules/")
 include(CppGlob)
-include(CustomAddExe)
+include(CustomMexFunctions)
 project(Grid2DTest)
 
 FIND_PACKAGE(Matlab REQUIRED)
 
 message(STATUS "C Compiler   = ${CMAKE_C_COMPILER}")
 message(STATUS "C++ Compiler = ${CMAKE_CXX_COMPILER}")
-
-# Initializing MATLAB include and link directories
-    message(STATUS "Matlab_INCLUDE_DIRS = ${Matlab_INCLUDE_DIRS}")
-    include_directories(${Matlab_INCLUDE_DIRS})
-    
-    message(STATUS "Matlab_MEX_LIBRARY = ${Matlab_MEX_LIBRARY}")
-    get_filename_component(Matlab_LIB_DIR ${Matlab_MEX_LIBRARY} DIRECTORY)
-    
-    message(STATUS "Matlab_LIB_DIR = ${Matlab_LIB_DIR}")
-    link_directories(${Matlab_LIB_DIR})
-
-    message(STATUS "Initializing relevant matlab libraries")
-    set(Matlab_LINK_LIBS mex mx ut)
-    if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-        foreach(Matlab_lib in ${Matlab_LINK_LIBS})
-            list(APPEND Temp_Matlab_LINK_LIBS lib${Matlab_lib})
-        endforeach()
-        set(Matlab_LINK_LIBS ${Temp_Matlab_LINK_LIBS})
-    endif()
 
 # define submodules directory and adding into include path
     if(NOT DEFINED ENV{SUBMODULES_DIR} AND NOT DEFINED SUBMODULES_DIR)
@@ -64,29 +45,11 @@ message(STATUS "C++ Compiler = ${CMAKE_CXX_COMPILER}")
         FILES ${MEX_HEADER_FILE_PATHS})
 
 # include executable
-    custom_add_executable(Grid2DTest ${SOURCE_FILES_1})
-    custom_add_executable(Grid2DMexIOTest ${SOURCE_FILES_2})
+    custom_add_mex_exec(Grid2DTest ${SOURCE_FILES_1})
+    custom_add_mex_exec(Grid2DMexIOTest ${SOURCE_FILES_2})
 
 # definition of MEX_TYPE
     add_definitions(-DMEX_EXE)
-
-# assigning compiler independent WholeProgram optimization flags
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        set(LTO_COMPILE_SWITCH "/GL")
-        set(LTO_LINK_SWITCH "/LTCG")
-    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        set(LTO_COMPILE_SWITCH "-flto") # These variables are unset because I have not optimized for gcc yet
-        set(LTO_LINK_SWITCH "-flto")
-    endif()
-    
-    message(STATUS "LTO_COMPILE_SWITCH = ${LTO_COMPILE_SWITCH}" )
-    message(STATUS "LTO_LINK_SWITCH = ${LTO_LINK_SWITCH}" )
-
-# assigning platform specific compiler flags
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -march=native")
-        set(RELEASE_OPTIM_OPTION "-O3")
-    endif()
 
 # assign default build type in case of single config generator 
     if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
@@ -99,13 +62,12 @@ message(STATUS "C++ Compiler = ${CMAKE_CXX_COMPILER}")
 # for DEBUG CONFIG
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DIS_DEBUG=true")
 # for RELEASE CONFIG
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DIS_DEBUG=false ${RELEASE_OPTIM_OPTION} ${LTO_COMPILE_SWITCH}")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DIS_DEBUG=false")
 
 # Definition of install directory
-    if (NOT CMAKE_CONFIGURATION_TYPES)
-        install(TARGETS Grid2DTest Grid2DMexIOTest RUNTIME DESTINATION ${CMAKE_BINARY_DIR}/Release CONFIGURATIONS "Release")
-    endif()
-
+    install(DIRECTORY DESTINATION ${CMAKE_BINARY_DIR}/install CONFIGURATIONS "Release")
+    install(TARGETS Grid2DTest Grid2DMexIOTest RUNTIME DESTINATION ${CMAKE_BINARY_DIR}/install CONFIGURATIONS "Release")
+    
 # unset some cached variables so that they are restord to their
 # default values the next time cmake is run
     unset(SUBMODULES_DIR CACHE)
