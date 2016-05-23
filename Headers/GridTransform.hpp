@@ -6,28 +6,25 @@
 #include <type_traits>
 
 template<typename T,
-         std::enable_if<
-             std::is_same<T,double>::value &&
-             std::is_same<T,float>::value>
-             ::type>
+         typename B = typename std::enable_if<std::is_floating_point<T>::value>::type>
 struct GridTransform {
 
     T scaleX, scaleY;
     T shiftX, shiftY;
 
-	inline DoublePoint toActualPoint(const DoublePoint &gridPoint) const {
-		return Point<T>(scaleX*gridPoint.x + shiftX, scaleY*gridPoint.y + shiftY);
+	inline GenericPoint<T> toActualPoint(const GenericPoint<T> &gridPoint) const {
+		return GenericPoint<T>(scaleX*gridPoint.x + shiftX, scaleY*gridPoint.y + shiftY);
 	}
-	inline Point<T> toGridPoint(const Point<T> &actualPoint) const {
-		return DoublePoint((actualPoint.x - shiftX)/scaleX, (actualPoint.y - shiftY)/scaleY);
+	inline GenericPoint<T> toGridPoint(const GenericPoint<T> &actualPoint) const {
+		return GenericPoint<T>((actualPoint.x - shiftX)/scaleX, (actualPoint.y - shiftY)/scaleY);
 	}
 	inline bool test() const {
 		std::vector<DoublePoint> TestGridPointVect = {
-			DoublePoint(0,0),
-			DoublePoint(1,0),
-			DoublePoint(0,1),
-			DoublePoint(2,3),
-			DoublePoint(1.63,2.42)
+			GenericPoint<T>(0,0),
+			GenericPoint<T>(1,0),
+			GenericPoint<T>(0,1),
+			GenericPoint<T>(2,3),
+			GenericPoint<T>(1.63,2.42)
 		};
 		bool isSuccessful = true;
 		double eps = 1e-10;
