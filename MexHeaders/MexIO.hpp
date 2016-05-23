@@ -12,7 +12,7 @@ inline mxArrayPtr assignmxArray(MexVector<GenericPoint<T>> &PointVectOut) {
     mxArrayPtr returnmxArray;
     size_t StructSize[] = {1,1};
     const char * FieldNames[] = {
-        "Class",
+        "ClassName",
         "X",
         "Y"
     };
@@ -51,8 +51,8 @@ static void getInputfrommxArray(const mxArray *InputArray, MexVector<GenericPoin
     mxArrayPtr XmxArray = mxGetField(InputArray, 0, "X");
     mxArrayPtr YmxArray = mxGetField(InputArray, 0, "Y");
 
-    uint32_t* XData = reinterpret_cast<uint32_t*>(mxGetData(XmxArray));
-    uint32_t* YData = reinterpret_cast<uint32_t*>(mxGetData(YmxArray));
+    T* XData = reinterpret_cast<T*>(mxGetData(XmxArray));
+    T* YData = reinterpret_cast<T*>(mxGetData(YmxArray));
 
     uint32_t NPoints = mxGetNumberOfElements(XmxArray);
     PointVectIn.resize(NPoints);
@@ -85,7 +85,7 @@ static int getInputfromStruct(
 };
 
 template<typename T, class Al>
-class FieldInfo<MexVector<GenericPoint<T>, Al>, void> {
+struct FieldInfo<MexVector<GenericPoint<T>, Al>, void> {
     static inline bool CheckType(const mxArray* InputmxArray) {
         /*
          * Validates if the InputmxArray represents a valid PointVector or not.
@@ -101,7 +101,7 @@ class FieldInfo<MexVector<GenericPoint<T>, Al>, void> {
         // Validating ClassName
         mxArrayPtr ClassNameField = mxGetField(InputmxArray, 0, "ClassName");
         char* ClassName = mxArrayToString(ClassNameField);
-        bool isFieldValidType = !strcasecmp(ClassName, "PointVector");
+        bool isFieldValidType = !STRCMPI_FUNC(ClassName, "PointVector");
         mxFree(ClassName);
 
         // Validating X,Y Members Existance
@@ -118,15 +118,15 @@ class FieldInfo<MexVector<GenericPoint<T>, Al>, void> {
 
         // Validating X,Y Members type
         if (isFieldValidType) {
-            if(!(FieldInfo<uint32_t>::CheckType(XmxArray) && FieldInfo<uint32_t>::CheckType(YmxArray))) {
+            if(!(FieldInfo<T>::CheckType(XmxArray) && FieldInfo<T>::CheckType(YmxArray))) {
                 isFieldValidType = false;
             }
         }
 
         // Validating X,Y Members Size
         if (isFieldValidType) {
-            uint32_t XSize = FieldInfo<uint32_t>::getSize(XmxArray);
-            uint32_t YSize = FieldInfo<uint32_t>::getSize(YmxArray);
+            uint32_t XSize = FieldInfo<T>::getSize(XmxArray);
+            uint32_t YSize = FieldInfo<T>::getSize(YmxArray);
 
             if (XSize != YSize) {
                 isFieldValidType = false;
@@ -143,7 +143,7 @@ class FieldInfo<MexVector<GenericPoint<T>, Al>, void> {
          */
 
         mxArrayPtr XmxArray = mxGetField(InputmxArray, 0, "X");
-        return FieldInfo<uint32_t>::getSize(XmxArray);
+        return FieldInfo<T>::getSize(XmxArray);
     }
 };
 #endif //GRID2DTEST_MEXIO_HPP_HPP
