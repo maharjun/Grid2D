@@ -288,7 +288,7 @@ void LinearRegion::assignVect(const MexVector<uint32_t, Al> &intervalBoundaryVec
 	if (isVectValid) {
 		regionIntervals.resize(intervalBoundaryVect.size()/2);
 		for(int i=0; i<intervalBoundaryVect.size(); i+=2) {
-			regionIntervals.push_back(DiscreteRange(intervalBoundaryVect[i], intervalBoundaryVect[i+1]));
+			regionIntervals[i/2] = DiscreteRange(intervalBoundaryVect[i], intervalBoundaryVect[i+1]);
 		}
 	}
 	else {
