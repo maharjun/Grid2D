@@ -66,6 +66,9 @@ public:
 		 * Next, We bucket the points according to their Y coordinates. Then we sort
 		 * the buckets. These buckets become the gridRows.
 		 *
+		 * Through the above procedure, we are careful to take account of the repeat of
+		 * terminal vertices in the border
+		 *
 		 */
 
 		// CAllocator is used here due to matlabs horrible inefficiency in cleaning up
@@ -77,52 +80,111 @@ public:
 		// 1.  Every point must be adjacent to the next
 		// 2.  All points should be <= gridlims
 		bool isBoundaryValid = true;
+		PointMexVect boundaryTermPoints;
+		bool isNewBoundaryStarting = true; // used to indicate if a new boundary section is starting
+		bool isFinallyTerminating = false; // used to indicate if the next point is a part of the final link
+		uint32_t subBoundaryCursor = 0;
+		// First we split the boundary into its constituent boundaries
+		// and validate the syntax
+		MexVector<MexVector<Point, CAllocator>> subBoundaries;
 		for(int i=0; i<Boundary.size(); ++i) {
 			auto CurrentPoint = Boundary[i];
-			auto NextPoint = (i+1<Boundary.size())?Boundary[i+1]:Boundary[0];
 
-			if (CurrentPoint.x == NextPoint.x &&
-				(CurrentPoint.y + 1 == NextPoint.y || CurrentPoint.y == NextPoint.y + 1)) {}
-			else if(CurrentPoint.y == NextPoint.y &&
-				(CurrentPoint.x + 1 == NextPoint.x || CurrentPoint.x == NextPoint.x + 1)) {}
+			if (isFinallyTerminating) {
+				if(CurrentPoint == boundaryTermPoints.last()) {
+					// This means that this is a final terminating point
+					// and must be popped out
+					boundaryTermPoints.pop_back();
+				}
+				else {
+					// This is an incorrect boundary
+					isBoundaryValid = false;
+					break;
+				}
+			}
+			else if (isNewBoundaryStarting) {
+				boundaryTermPoints.push_back(CurrentPoint);
+				subBoundaries.push_back({CurrentPoint});
+				isNewBoundaryStarting = false;
+			}
+			else if (CurrentPoint == boundaryTermPoints.last()) {
+				if (i + boundaryTermPoints.size() < Boundary.size()) {
+					// In this case, this is simply an intermediate termination point
+					// the next point is the start of a new boundary.
+					isNewBoundaryStarting = true;
+				}
+				else {
+					// In this case, all the points next must form a part of
+					// the final terminating chain
+					boundaryTermPoints.pop_back();
+					isFinallyTerminating = true;
+				}
+			}
 			else {
-				isBoundaryValid = false;
-				break;
-			}
-			if (Boundary[i].x > gridXLim_ || Boundary[i].y > gridYLim_) {
-				isBoundaryValid = false;
-				break;
+				subBoundaries.last().push_back(CurrentPoint);
 			}
 		}
-		if(isBoundaryValid) {
-			isBoundaryValid = (
-				(Boundary.last().x == Boundary[0].x || Boundary.last().y == Boundary[0].y) &&
-				Boundary.last().x <= gridXLim_ && Boundary.last().y <= gridYLim_
-			);
+		if (!boundaryTermPoints.isempty()) {
+			// Boundary has been unsatisfactorily completed
+			isBoundaryValid = false;
 		}
+
+		// Here we attempt to validate each of the sub-boundaries as being contiguous
+		if (isBoundaryValid)
+			for (auto &subBoundary : subBoundaries) {
+				for(int i=0; i<subBoundary.size(); ++i) {
+					auto CurrentPoint = subBoundary[i];
+					auto NextPoint = (i+1<subBoundary.size())?subBoundary[i+1]:subBoundary[0];
+
+					if (CurrentPoint.x == NextPoint.x &&
+					    (CurrentPoint.y + 1 == NextPoint.y || CurrentPoint.y == NextPoint.y + 1)) {}
+					else if(CurrentPoint.y == NextPoint.y &&
+					        (CurrentPoint.x + 1 == NextPoint.x || CurrentPoint.x == NextPoint.x + 1)) {}
+					else {
+						isBoundaryValid = false;
+						break;
+					}
+					if (CurrentPoint.x > gridXLim_ || CurrentPoint.y > gridYLim_) {
+						isBoundaryValid = false;
+						break;
+					}
+				}
+				if(isBoundaryValid) {
+					isBoundaryValid = (
+						(Boundary.last().x == Boundary[0].x || Boundary.last().y == Boundary[0].y) &&
+						Boundary.last().x <= gridXLim_ && Boundary.last().y <= gridYLim_
+					);
+				}
+				if (!isBoundaryValid) {
+					break;
+				}
+			}
+
 
 		if(isBoundaryValid) {
 			// Bucketing points
-			for(int i=0; i<Boundary.size(); ++i) {
+			for(auto &subBoundary : subBoundaries) {
+				for(int i=0; i<subBoundary.size(); ++i) {
 
-				auto CurrentPoint = Boundary[i];
-				auto NextPoint = (i+1<Boundary.size())?Boundary[i+1]:Boundary[0];
+					auto CurrentPoint = subBoundary[i];
+					auto NextPoint = (i+1<subBoundary.size())?subBoundary[i+1]:subBoundary[0];
 
-				if(NextPoint.x == CurrentPoint.x && NextPoint.y == CurrentPoint.y+1) {
-					// Upward edge => left edge => insert point into row
-					gridRowBuckets[CurrentPoint.y].push_back(CurrentPoint.x);
-				}
-				else if(NextPoint.x == CurrentPoint.x && NextPoint.y+1 == CurrentPoint.y) {
-					// Downward edge => right edge => insert point into row.
-					gridRowBuckets[CurrentPoint.y-1].push_back(CurrentPoint.x);
-				}
-				else if(NextPoint.x == CurrentPoint.x+1 && NextPoint.y == CurrentPoint.y) {
-					// Rightward edge => Top edge => insert point into column.
-					gridColumnBuckets[CurrentPoint.x].push_back(CurrentPoint.y);
-				}
-				else if(NextPoint.x+1 == CurrentPoint.x && NextPoint.y == CurrentPoint.y) {
-					// Leftward edge => Bottom edge => insert point into column.
-					gridColumnBuckets[CurrentPoint.x-1].push_back(CurrentPoint.y);
+					if(NextPoint.x == CurrentPoint.x && NextPoint.y == CurrentPoint.y+1) {
+						// Upward edge => left edge => insert point into row
+						gridRowBuckets[CurrentPoint.y].push_back(CurrentPoint.x);
+					}
+					else if(NextPoint.x == CurrentPoint.x && NextPoint.y+1 == CurrentPoint.y) {
+						// Downward edge => right edge => insert point into row.
+						gridRowBuckets[CurrentPoint.y-1].push_back(CurrentPoint.x);
+					}
+					else if(NextPoint.x == CurrentPoint.x+1 && NextPoint.y == CurrentPoint.y) {
+						// Rightward edge => Top edge => insert point into column.
+						gridColumnBuckets[CurrentPoint.x].push_back(CurrentPoint.y);
+					}
+					else if(NextPoint.x+1 == CurrentPoint.x && NextPoint.y == CurrentPoint.y) {
+						// Leftward edge => Bottom edge => insert point into column.
+						gridColumnBuckets[CurrentPoint.x-1].push_back(CurrentPoint.y);
+					}
 				}
 			}
 
@@ -135,11 +197,19 @@ public:
 			}
 
 			// Assigning
-			for(int i=0; i<gridXLim_; ++i) {
-				gridColumns[i].assignVect(gridColumnBuckets[i]);
+			try {
+				for(int i=0; i<gridXLim_; ++i) {
+					gridColumns[i].assignVect(gridColumnBuckets[i]);
+				}
+				for(int i=0; i<gridYLim_; ++i) {
+					gridRows[i].assignVect(gridRowBuckets[i]);
+				}
 			}
-			for(int i=0; i<gridYLim_; ++i) {
-				gridRows[i].assignVect(gridRowBuckets[i]);
+			catch (RegionException E) {
+				if (E == RegionException::INVALID_LINEAR_REGION) {
+					WriteException(RegionException::INVALID_BOUNDARY,
+					               "It Appears that regions specified by the boundary are not properly separated from one another");
+				}
 			}
 		}
 		else {

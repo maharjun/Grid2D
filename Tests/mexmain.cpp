@@ -34,15 +34,29 @@ int main() {
 		Point(3, 0),
 		Point(2, 0),
 		Point(1, 0),
+		Point(0, 0),
+		Point(2, 4),
+		Point(2, 5),
+		Point(2, 6),
+		Point(2, 7),
+		Point(3, 7),
+		Point(4, 7),
+		Point(5, 7),
+		Point(5, 6),
+		Point(5, 5),
+		Point(5, 4),
+		Point(4, 4),
+		Point(3, 4),
+		Point(2, 4),
+		Point(0, 0)
 	}; // This is in clockwise rotation sequence
 
 	// Generate some incorrect boundaries
-	auto IncorrectMidWayBoundary1 = CorrectMidwayBoundary;
-	IncorrectMidWayBoundary1.erase(3);
-	auto IncorrectMidWayBoundary2 = CorrectMidwayBoundary;
-	IncorrectMidWayBoundary2.last() = Point(2, 1);
-	auto IncorrectMidWayBoundary3 = CorrectMidwayBoundary;
-	IncorrectMidWayBoundary3.insert(7, {
+	MexVector<PointMexVect> IncorrectMidwayBoundaries(4, CorrectMidwayBoundary);
+	IncorrectMidwayBoundaries[0].erase(3);
+	IncorrectMidwayBoundaries[1].pop_back();
+	IncorrectMidwayBoundaries[2].last() = Point(2, 1);
+	IncorrectMidwayBoundaries[3].insert(7, {
 		Point(4,3),
 		Point(5,3),
 		Point(6,3),
@@ -73,40 +87,20 @@ int main() {
 	cout << "Boundary successfully converted to and from region" << endl;
 
 	// Try Processing Incorrect Boundaries
-	try {
-		regionFromBoundary = Region(IncorrectMidWayBoundary1, 7, 7);
-	}
-	catch (RegionException E) {
-		if (E == RegionException::INVALID_BOUNDARY) {
-			cout << "Incorrect boundary 1 successfully rejected" << endl;
+	for (size_t i = 0; i < IncorrectMidwayBoundaries.size(); ++i) {
+		try {
+			regionFromBoundary = Region(IncorrectMidwayBoundaries[i], 7, 7);
 		}
-		else {
-			throw(E);
-		}
-	}
-	try {
-		regionFromBoundary = Region(IncorrectMidWayBoundary2, 7, 7);
-	}
-	catch (RegionException E) {
-		if (E == RegionException::INVALID_BOUNDARY) {
-			cout << "Incorrect boundary 2 successfully rejected" << endl;
-		}
-		else {
-			throw(E);
+		catch (RegionException E) {
+			if (E == RegionException::INVALID_BOUNDARY) {
+				cout << "Incorrect boundary " << i+1 << " successfully rejected" << endl;
+			}
+			else {
+				throw(E);
+			}
 		}
 	}
-	try {
-		regionFromBoundary = Region(IncorrectMidWayBoundary3, 7, 7);
-	}
-	catch (RegionException E) {
-		if (E == RegionException::INVALID_BOUNDARY) {
-			cout << "Incorrect boundary 3 successfully rejected" << endl;
-		}
-		else {
-			throw(E);
-		}
-	}
-	
+
 	cout << "Tests Successfully passed" << endl;
 	return 0;
 }

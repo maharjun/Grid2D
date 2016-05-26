@@ -115,6 +115,21 @@ int main() {
 		Point(3, 0),
 		Point(2, 0),
 		Point(1, 0),
+	    Point(0, 0),
+		Point(2, 4),
+		Point(2, 5),
+		Point(2, 6),
+		Point(2, 7),
+		Point(3, 7),
+		Point(4, 7),
+		Point(5, 7),
+		Point(5, 6),
+		Point(5, 5),
+		Point(5, 4),
+		Point(4, 4),
+		Point(3, 4),
+		Point(2, 4),
+		Point(0, 0)
 	}; // This is in clockwise rotation sequence
 
 	// Insert all points in FirstSquare except (1,1)

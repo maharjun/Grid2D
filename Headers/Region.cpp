@@ -175,14 +175,34 @@ PointMexVect Region::getMidwayBoundary() const {
 			gridRows[firstRow].getCoord());
 		
 		PointMexVect boundaryVect;
-		auto currentPoint = minPoint;
-		do {
+		PointMexVect boundaryTermPoints;
+		// Here we insert the boundary corresponding to the
+
+		while(!boundaryEdges.empty()) {
+
+			auto minPoint = std::min_element(boundaryEdges.begin(), boundaryEdges.end(),
+			                                 [] (const Edge &Edge1, const Edge &Edge2) -> bool {
+				                                 return Edge1.first < Edge2.first;
+			                                 })->first;
+			auto currentPoint = minPoint;
+			do {
+				boundaryVect.push_back(currentPoint);
+				auto nextPoint = boundaryEdges[currentPoint];
+				boundaryEdges.erase(currentPoint);
+				currentPoint = nextPoint;
+			} while (currentPoint != minPoint);
+
 			boundaryVect.push_back(currentPoint);
-			auto nextPoint = boundaryEdges[currentPoint];
-			boundaryEdges.erase(currentPoint);
-			currentPoint = nextPoint;
-		} while (currentPoint != minPoint);
-		
+
+			if(!boundaryEdges.empty()) {
+				boundaryTermPoints.push_back(currentPoint);
+			}
+		}
+
+		while (!boundaryTermPoints.isempty()) {
+			boundaryVect.push_back(boundaryTermPoints.pop_back());
+		}
+
 		return boundaryVect;
 	}
 	else {
