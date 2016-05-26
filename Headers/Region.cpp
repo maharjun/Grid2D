@@ -125,8 +125,10 @@ PointMexVect Region::getMidwayBoundary() const {
 	consolidate();
 
 	typedef std::pair<Point, Point> Edge;
-	typedef std::unordered_map<Point, Point, Point::hasher> EdgeMap;
-
+	typedef std::unordered_multimap<Point, Point, Point::hasher> EdgeMap;
+	// The reason a multimap is needed is in case a region is one pixel
+	// diagonally adjacent to another in which case both will share a
+	// vertex in MidwayBoundary.
 	EdgeMap boundaryEdges;
 	for(auto &column : gridColumns) {
 		auto &colIntervals = column.getRegionIntervals();
@@ -144,15 +146,9 @@ PointMexVect Region::getMidwayBoundary() const {
 		}
 	}
 
-	uint32_t firstRow = 0;
-	bool foundFirstRow = false;
+
 	for (auto &row : gridRows) {
 		auto &rowIntervals = row.getRegionIntervals();
-		if(!rowIntervals.isempty() && !foundFirstRow) {
-			// This is to calculate the first non-empty row
-			firstRow = row.getCoord();
-			foundFirstRow = true;
-		}
 		for (auto interval : rowIntervals) {
 			// Left Edge inserted in upward direction.
 			boundaryEdges.insert(Edge(
@@ -167,35 +163,32 @@ PointMexVect Region::getMidwayBoundary() const {
 		}
 	}
 
-	if (foundFirstRow) {
+	if (!boundaryEdges.empty()) {
 		// This means that there is at-least one non-empty row
 		// Hence we assign the min-point (min by lexicographical ordering)
-		Point minPoint(
-			gridRows[firstRow].getRegionIntervals()[0].beginPoint,
-			gridRows[firstRow].getCoord());
-		
+
 		PointMexVect boundaryVect;
 		PointMexVect boundaryTermPoints;
-		// Here we insert the boundary corresponding to the
 
 		while(!boundaryEdges.empty()) {
 
-			auto minPoint = std::min_element(boundaryEdges.begin(), boundaryEdges.end(),
-			                                 [] (const Edge &Edge1, const Edge &Edge2) -> bool {
-				                                 return Edge1.first < Edge2.first;
-			                                 })->first;
-			auto currentPoint = minPoint;
+			auto minPointIter = std::min_element(boundaryEdges.begin(), boundaryEdges.end(),
+			                                     [] (const Edge &Edge1, const Edge &Edge2) -> bool {
+				                                     return Edge1.first < Edge2.first;
+			                                     });
+			auto minPoint = minPointIter->first;
+			auto currentPointIter = minPointIter;
 			do {
-				boundaryVect.push_back(currentPoint);
-				auto nextPoint = boundaryEdges[currentPoint];
-				boundaryEdges.erase(currentPoint);
-				currentPoint = nextPoint;
-			} while (currentPoint != minPoint);
+				boundaryVect.push_back(currentPointIter->first);
+				auto nextPointIter = boundaryEdges.find(currentPointIter->second);
+				boundaryEdges.erase(currentPointIter);
+				currentPointIter = nextPointIter;
+			} while (currentPointIter != boundaryEdges.end());
 
-			boundaryVect.push_back(currentPoint);
+			boundaryVect.push_back(minPoint);
 
 			if(!boundaryEdges.empty()) {
-				boundaryTermPoints.push_back(currentPoint);
+				boundaryTermPoints.push_back(minPoint);
 			}
 		}
 
