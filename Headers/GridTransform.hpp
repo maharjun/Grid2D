@@ -1,7 +1,7 @@
 #ifndef TRANSFORM_HPP
 #define TRANSFORM_HPP
 
-#include "Grid2D/Headers/Point.hpp"
+#include "Point.hpp"
 #include <cmath>
 #include <type_traits>
 
