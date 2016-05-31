@@ -46,6 +46,7 @@ uint32_t LinearRegion::find(uint32_t val) const {
 		if (regionIntervals[i].contains(val)) {
 			isInsideInterval = true;
 			IntervalIndex = i;
+			break;
 		}
 		else if(regionIntervals[i].isAfter(val)) {
 			isBeforeInterval = true;
