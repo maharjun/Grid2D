@@ -44,13 +44,6 @@ message(STATUS "C++ Compiler = ${CMAKE_CXX_COMPILER}")
         "Header Files\\Grid2D\\MexHeaders"
         FILES ${MEX_HEADER_FILE_PATHS})
 
-# include executable
-    custom_add_mex_exec(Grid2DTest ${SOURCE_FILES_1})
-    custom_add_mex_exec(Grid2DMexIOTest ${SOURCE_FILES_2})
-
-# definition of MEX_TYPE
-    add_definitions(-DMEX_EXE)
-
 # assign default build type in case of single config generator 
     if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
         message(STATUS "CMAKE_BUILD_TYPE not defined")
@@ -58,15 +51,14 @@ message(STATUS "C++ Compiler = ${CMAKE_CXX_COMPILER}")
     endif()
     message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 
-# definition of build type specific parameters
-# for DEBUG CONFIG
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DIS_DEBUG=true")
-# for RELEASE CONFIG
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DIS_DEBUG=false")
+# include executable
+    custom_add_mex_exec(Grid2DTest ${SOURCE_FILES_1})
+    custom_add_mex_exec(Grid2DMexIOTest ${SOURCE_FILES_2})
 
 # Definition of install directory
     install(DIRECTORY DESTINATION ${CMAKE_BINARY_DIR}/install CONFIGURATIONS "Release")
-    install(TARGETS Grid2DTest Grid2DMexIOTest RUNTIME DESTINATION ${CMAKE_BINARY_DIR}/install CONFIGURATIONS "Release")
+    install_mex_exec(Grid2DTest ${CMAKE_BINARY_DIR}/install CONFIGURATIONS "Release")
+    install_mex_exec(Grid2DMexIOTest ${CMAKE_BINARY_DIR}/install CONFIGURATIONS "Release")
     
 # unset some cached variables so that they are restord to their
 # default values the next time cmake is run
