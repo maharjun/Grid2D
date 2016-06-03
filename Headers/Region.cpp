@@ -92,7 +92,7 @@ PointSet Region::getOuterBoundary() const
 	return outerBoundary;
 }
 
-PointMexVect Region::getMidwayBoundary() const {
+MexVector<Point, CAllocator> Region::getMidwayBoundary() const {
 	/* 
 	 * This function returns the Midway boundary corresponding to the region.
 	 * The midway boundary  consists of half points that  actually define the
@@ -200,6 +200,6 @@ PointMexVect Region::getMidwayBoundary() const {
 	}
 	else {
 		// This means the region is empty. So return empty border
-		return PointMexVect();
+		return MexVector<Point, CAllocator>();
 	}
 }

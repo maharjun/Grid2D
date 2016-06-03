@@ -12,12 +12,15 @@
 // CONSTRUCTORS
 // ##################################################################
 
-inline LinearRegion::LinearRegion() : regionLenLim(UINT32_MAX), regionIntervals() {}
+template<class Al>
+inline LinearRegion<Al>::LinearRegion() : regionLenLim(UINT32_MAX), regionIntervals() {}
 
-inline LinearRegion::LinearRegion(uint32_t regionLenLim_) : regionLenLim(regionLenLim_), regionIntervals() {}
+template<class Al>
+inline LinearRegion<Al>::LinearRegion(uint32_t regionLenLim_) : regionLenLim(regionLenLim_), regionIntervals() {}
 
 template <class Al>
-inline LinearRegion::LinearRegion(uint32_t regionLenLim_, const MexVector<uint32_t, Al> &intervalBoundaryVect) : LinearRegion(regionLenLim_) {
+template <class Al2>
+inline LinearRegion<Al>::LinearRegion(uint32_t regionLenLim_, const MexVector<uint32_t, Al2> &intervalBoundaryVect) : LinearRegion(regionLenLim_) {
 	this->assignVect(intervalBoundaryVect);
 }
 
@@ -25,7 +28,8 @@ inline LinearRegion::LinearRegion(uint32_t regionLenLim_, const MexVector<uint32
 // MEMBER FUNCTIONS
 // ##################################################################
 
-uint32_t LinearRegion::find(uint32_t val) const {
+template <class Al>
+uint32_t LinearRegion<Al>::find(uint32_t val) const {
 	/*
 	 * This function returns the index i such that the value val is either con-
 	 * tained in the interval regionIntervals[i] or else, regionIntervals[i]
@@ -64,7 +68,8 @@ uint32_t LinearRegion::find(uint32_t val) const {
 	return IntervalIndex;
 }
 
-void LinearRegion::insert(uint32_t val) {
+template <class Al>
+void LinearRegion<Al>::insert(uint32_t val) {
 	/* 
 	 * This function inserts the value val into the linear region.
 	 * 
@@ -117,7 +122,8 @@ void LinearRegion::insert(uint32_t val) {
 	}
 }
 
-void LinearRegion::resize(uint32_t NewLenLim)
+template <class Al>
+void LinearRegion<Al>::resize(uint32_t NewLenLim)
 {
 	if (NewLenLim < this->regionLenLim) {
 		// Will have to strip the points off
@@ -145,12 +151,14 @@ void LinearRegion::resize(uint32_t NewLenLim)
 	this->regionLenLim = NewLenLim;
 }
 
-inline const MexVector<DiscreteRange> & LinearRegion::getRegionIntervals() const
+template <class Al>
+inline const MexVector<DiscreteRange, Al> & LinearRegion<Al>::getRegionIntervals() const
 {
 	return regionIntervals;
 }
 
-inline LinearRegion LinearRegion::getDiff(const LinearRegion & otherLinRegion) const
+template <class Al>
+inline LinearRegion<Al> LinearRegion<Al>::getDiff(const LinearRegion & otherLinRegion) const
 {
 	/* 
 	 * This function returns the  difference of the  two Linear Regions.  For
@@ -246,7 +254,8 @@ inline LinearRegion LinearRegion::getDiff(const LinearRegion & otherLinRegion) c
 	return DiffRegion;
 }
 
-inline MexVector<uint32_t> LinearRegion::getValueVect() const
+template <class Al>
+inline MexVector<uint32_t> LinearRegion<Al>::getValueVect() const
 {
 	/* This function  returns a vector  containing the values  in the current
 	 * region. The vector is sorted in ascending order.
@@ -260,13 +269,15 @@ inline MexVector<uint32_t> LinearRegion::getValueVect() const
 	return ValueVect;
 }
 
-inline bool LinearRegion::contains(uint32_t val) const {
+template <class Al>
+inline bool LinearRegion<Al>::contains(uint32_t val) const {
 	auto IntervalIndex = this->find(val);
 	return (regionIntervals[IntervalIndex].contains(val));
 }
 
 template <class Al>
-void LinearRegion::assignVect(const MexVector<uint32_t, Al> &intervalBoundaryVect) {
+template <class Al2>
+void LinearRegion<Al>::assignVect(const MexVector<uint32_t, Al2> &intervalBoundaryVect) {
 	// Validate intervalBoundaryVect and assign.
 
 	// Check if intervalBoundaryVect is of even length

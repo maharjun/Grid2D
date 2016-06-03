@@ -4,7 +4,8 @@
 #include "Point.hpp"
 #include "LinearRegion.hpp"
 
-class ColumnRegion : public LinearRegion {
+template <class Al=mxAllocator>
+class ColumnRegion : public LinearRegion<Al> {
 private:
 	uint32_t columnCoord;
 	inline void ValidatePoint(const Point &P) const {
@@ -15,13 +16,13 @@ private:
 	}
 public:
 	ColumnRegion() : columnCoord(UINT32_MAX) {}
-	ColumnRegion(uint32_t regionCoord_, uint32_t regionLenLim_) : LinearRegion(regionLenLim_)
+	ColumnRegion(uint32_t regionCoord_, uint32_t regionLenLim_) : LinearRegion<Al>(regionLenLim_)
 	{
 		columnCoord = regionCoord_;
 	}
 	inline void insert(const Point &P) {
 		ValidatePoint(P);
-		LinearRegion::insert(P.y);
+		LinearRegion<Al>::insert(P.y);
 	}
 	inline uint32_t getCoord() const
 	{
@@ -29,11 +30,12 @@ public:
 	}
 	inline uint32_t find(const Point& P) const {
 		ValidatePoint(P);
-		return LinearRegion::find(P.y);
+		return LinearRegion<Al>::find(P.y);
 	}
 };
 
-struct RowRegion : LinearRegion {
+template <class Al=mxAllocator>
+struct RowRegion : LinearRegion<Al> {
 private:
 	uint32_t rowCoord;
 	inline void ValidatePoint(const Point &P) const {
@@ -45,13 +47,13 @@ private:
 	}
 public:
 	RowRegion() : rowCoord(UINT32_MAX) {}
-	RowRegion(uint32_t regionCoord_, uint32_t regionLenLim_) : LinearRegion(regionLenLim_)
+	RowRegion(uint32_t regionCoord_, uint32_t regionLenLim_) : LinearRegion<Al>(regionLenLim_)
 	{
 		rowCoord = regionCoord_;
 	}
 	inline void insert(const Point &P) {
 		ValidatePoint(P);
-		LinearRegion::insert(P.x);
+		LinearRegion<Al>::insert(P.x);
 	}
 	inline uint32_t getCoord() const
 	{
@@ -59,7 +61,7 @@ public:
 	}
 	inline uint32_t find(const Point &P) const {
 		ValidatePoint(P);
-		return LinearRegion::find(P.x);
+		return LinearRegion<Al>::find(P.x);
 	}
 };
 

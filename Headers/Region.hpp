@@ -15,8 +15,8 @@ struct Region{
 private:
 	uint32_t gridXLim;
 	uint32_t gridYLim;
-	mutable MexVector<ColumnRegion> gridColumns;
-	mutable MexVector<RowRegion> gridRows;
+	mutable MexVector<ColumnRegion<CAllocator>> gridColumns;
+	mutable MexVector<RowRegion<CAllocator>> gridRows;
 	mutable PointSet nonAddedPoints;
 	mutable PointSet innerBoundary;
 	
@@ -28,10 +28,10 @@ private:
 		gridColumns.resize(gridXLim);
 		gridRows.resize(gridYLim);
 		for (uint32_t x = 0; x < gridXLim; ++x) {
-			gridColumns[x] = ColumnRegion(x, gridYLim);
+			gridColumns[x] = ColumnRegion<CAllocator>(x, gridYLim);
 		}
 		for (uint32_t y = 0; y < gridYLim; ++y) {
-			gridRows[y] = RowRegion(y, gridXLim);
+			gridRows[y] = RowRegion<CAllocator>(y, gridXLim);
 		}
 	}
 
@@ -244,7 +244,7 @@ public:
 		return this->innerBoundary;
 	}
 	PointSet getOuterBoundary() const;
-	PointMexVect getMidwayBoundary() const;
+	MexVector<Point, CAllocator> getMidwayBoundary() const;
 
 	/*
 	 * This describes the algorithm in detail.

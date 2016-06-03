@@ -6,8 +6,8 @@
 #include <MexMemoryInterfacing/Headers/GenericMexIO.hpp>
 #include "../Headers/Point.hpp"
 
-template <typename T>
-inline mxArrayPtr assignmxArray(MexVector<GenericPoint<T>> &PointVectOut) {
+template <typename T, class Al>
+    inline mxArrayPtr assignmxArray(MexVector<GenericPoint<T>, Al> &PointVectOut) {
     mxClassID ClassID = GetMexType<T>::typeVal;
     mxArrayPtr returnmxArray;
     size_t StructSize[] = {1,1};
