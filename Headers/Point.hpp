@@ -12,7 +12,7 @@ struct GenericPoint {
 	T y;
 
 	bool operator<(const GenericPoint &P) const {
-		return (x < P.x || x == P.x && y < P.y);
+		return (x < P.x || (x == P.x && y < P.y));
 	}
 
 	GenericPoint() = default;
